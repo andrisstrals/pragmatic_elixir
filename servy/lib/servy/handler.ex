@@ -3,8 +3,20 @@ defmodule Servy.Handler do
     # conv = parse(request)
     # conv = route(conv)
     # format_response(conv)
-    request |> parse |> route |> format_response
+    request
+      |> parse
+      |> log
+      |> route
+      |> format_response
   end
+
+  # def log(conv) do
+  #   IO.inspect conv
+  #     #need to return it as well to keep pipeline working
+  #     # IO.inspect does it - it returns inspected object
+  # end
+
+  def log(conv), do: IO.inspect conv
 
   def parse(request) do
     [method, path, _] =
@@ -16,7 +28,13 @@ defmodule Servy.Handler do
   end
 
   def route(conv) do
+    route(conv, conv.method, conv.path)
+  end
+  def route(conv, "GET", "/wildthings") do
     %{ conv |  resp_body: "Bears, Lions, Tigers, Snakes" }
+  end
+  def route(conv, "GET", "/bears") do
+    %{ conv |  resp_body: "Teddy, Smokey, Paddington" }
   end
 
   def format_response(conv) do
@@ -31,6 +49,7 @@ defmodule Servy.Handler do
 
 end
 
+# -------------------------------
 request = """
 GET /wildthings HTTP/1.1
 Host: example.com
@@ -39,6 +58,34 @@ Accept: */*
 
 """
 
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+# -------------------------------
+
+request = """
+GET /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
 
 response = Servy.Handler.handle(request)
 IO.puts(response)
+
+# -------------------------------
+
+
+# request = """
+# GET /hren HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
+#
+# """
+#
+# response = Servy.Handler.handle(request)
+# IO.puts(response)
+
+# -------------------------------
