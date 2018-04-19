@@ -19,8 +19,17 @@ defmodule Servy.Handler do
   end
   def track(conv), do: conv
 
-  def rewrite_path(%{path: "/wildlife"} = conv), do: %{conv | path: "/wildthings"}
-  def rewrite_path(conv), do: conv
+  # def rewrite_path(%{path: "/wildlife"} = conv), do: %{conv | path: "/wildthings"}
+  # def rewrite_path(conv), do: conv
+  def rewrite_path(%{path: path} = conv) do
+    regex = ~r{\/(?<thing>\w+)\?id=(?<id>\d+)}
+    captures = Regex.named_captures(regex, path)
+    rewrite_path_captures(conv, captures)
+  end
+
+  def rewrite_path_captures(conv, %{"thing" => thing, "id" => id}), do:
+    %{ conv | path: "/#{thing}/#{id}" }
+  def rewrite_path_captures(conv, nil), do: conv
 
   def emojify(%{resp_body: resp_body, status: 200} = conv), do:
     %{conv | resp_body: ":) #{resp_body} 🎉" }
