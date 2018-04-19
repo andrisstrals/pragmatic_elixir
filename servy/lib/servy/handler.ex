@@ -8,6 +8,7 @@ defmodule Servy.Handler do
       |> rewrite_path
       |> log
       |> route
+      |> emojify
       |> track
       |> format_response
   end
@@ -21,11 +22,11 @@ defmodule Servy.Handler do
   def rewrite_path(%{path: "/wildlife"} = conv), do: %{conv | path: "/wildthings"}
   def rewrite_path(conv), do: conv
 
-  # def log(conv) do
-  #   IO.inspect conv
-  #     #need to return it as well to keep pipeline working
-  #     # IO.inspect does it - it returns inspected object
-  # end
+  def emojify(%{resp_body: resp_body, status: 200} = conv), do:
+    %{conv | resp_body: ":) #{resp_body} 🎉" }
+  def emojify(%{resp_body: resp_body} = conv), do:
+  %{conv | resp_body: "Sad... #{resp_body} :(" }
+
 
   def log(conv), do: IO.inspect conv
 
@@ -42,9 +43,6 @@ defmodule Servy.Handler do
      }
   end
 
-  # def route(conv) do
-  #   route(conv, conv.method, conv.path)
-  # end
 
   def route(%{method: "GET", path: "/wildthings"} = conv), do:
     %{ conv |  resp_body: "Bears, Lions, Tigers, Snakes", status: 200}
