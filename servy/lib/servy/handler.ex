@@ -5,10 +5,23 @@ defmodule Servy.Handler do
     # format_response(conv)
     request
       |> parse
+      |> rewrite_path
       |> log
       |> route
+      |> track
       |> format_response
   end
+
+  def track(%{status: 404, path: path} = conv) do
+    IO.puts "Warning!!! #{path} is on the loose!"
+    conv
+  end
+  def track(conv), do: conv
+
+  def rewrite_path(%{path: "/wildlife"} = conv) do
+    %{conv | path: "/wildthings"}
+  end
+  def rewrite_path(conv), do: conv
 
   # def log(conv) do
   #   IO.inspect conv
@@ -72,7 +85,7 @@ end
 
 # -------------------------------
 request = """
-GET /wildthings HTTP/1.1
+GET /wildlife HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
