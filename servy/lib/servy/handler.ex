@@ -31,6 +31,8 @@ defmodule Servy.Handler do
     %{ conv | path: "/#{thing}/#{id}" }
   def rewrite_path_captures(conv, nil), do: conv
 
+  def emojify(%{resp_body: resp_body, path: "/about", status: 200} = conv), do: conv
+
   def emojify(%{resp_body: resp_body, status: 200} = conv), do:
     %{conv | resp_body: ":) #{resp_body} 🎉" }
   def emojify(%{resp_body: resp_body} = conv), do:
@@ -61,6 +63,18 @@ defmodule Servy.Handler do
 
   def route(%{method: "GET", path: "/bears/" <> id} = conv), do:
     %{ conv |  resp_body: "Bear #{id}", status: 200}
+
+  def route(%{method: "GET", path: "/about" <> id} = conv) do
+    file =
+      Path.expand("lib/pages")
+      |> Path.join("about.html")
+      IO.puts("-----#{file}")
+    case File.read(file) do
+      {:ok, content} -> %{conv | status: 200, resp_body: content}
+      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found" }
+      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}" }
+    end
+  end
 
   def route(%{path: path} = conv), do:
     %{conv | resp_body: "No path #{path} found", status: 404}
@@ -133,6 +147,18 @@ IO.puts(response)
 
 request = """
 GET /hren HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+# -------------------------------
+
+request = """
+GET /about HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
