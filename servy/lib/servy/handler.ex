@@ -72,13 +72,9 @@ defmodule Servy.Handler do
       |> handle_file(conv)
   end
 
-  def handle_file(res, conv) do
-    case res do
-      {:ok, content} -> %{conv | status: 200, resp_body: content}
-      {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found" }
-      {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}" }
-    end
-  end
+  def handle_file({:ok, content}, conv), do: %{conv | status: 200, resp_body: content}
+  def handle_file({:error, :enoent}, conv), do: %{conv | status: 404, resp_body: "File not found" }
+  def handle_file({:error, reason}, conv), do: %{conv | status: 500, resp_body: "File error: #{reason}" }
 
   def route(%{path: path} = conv), do:
     %{conv | resp_body: "No path #{path} found", status: 404}
