@@ -68,8 +68,12 @@ defmodule Servy.Handler do
     file =
       Path.expand("lib/pages")
       |> Path.join("about.html")
-      IO.puts("-----#{file}")
-    case File.read(file) do
+      |> File.read
+      |> handle_file(conv)
+  end
+
+  def handle_file(res, conv) do
+    case res do
       {:ok, content} -> %{conv | status: 200, resp_body: content}
       {:error, :enoent} -> %{conv | status: 404, resp_body: "File not found" }
       {:error, reason} -> %{conv | status: 500, resp_body: "File error: #{reason}" }
