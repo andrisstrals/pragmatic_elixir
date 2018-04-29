@@ -13,9 +13,9 @@ defmodule Servy.Plugins do
     rewrite_path_captures(conv, captures)
   end
 
-  def rewrite_path_captures(conv, %{"thing" => thing, "id" => id}), do:
+  defp rewrite_path_captures(conv, %{"thing" => thing, "id" => id}), do:
   %{ conv | path: "/#{thing}/#{id}" }
-  def rewrite_path_captures(conv, nil), do: conv
+  defp rewrite_path_captures(conv, nil), do: conv
 
   def emojify(%{resp_body: resp_body, path: "/about", status: 200} = conv), do: conv
 
@@ -36,15 +36,17 @@ defmodule Servy.Handler do
 
   @pages_path Path.expand("lib/pages")
 
+  import Servy.Plugins, only: [rewrite_path: 1, log: 1, emojify: 1, track: 1]
+
   @doc "Transforms the request into response"
   def handle(request) do
     request
       |> parse
-      |> Servy.Plugins.rewrite_path
-      |> Servy.Plugins.log
+      |> rewrite_path
+      |> log
       |> route
-      |> Servy.Plugins.emojify
-      |> Servy.Plugins.track
+      |> emojify
+      |> track
       |> format_response
   end
 
