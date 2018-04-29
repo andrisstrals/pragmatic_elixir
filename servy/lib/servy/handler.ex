@@ -1,23 +1,4 @@
-defmodule Servy.Handler do
-
-  @moduledoc "Handles HTTP requests"
-
-  @pages_path Path.expand("lib/pages")
-
-  @doc "Transforms the request into response"
-  def handle(request) do
-    # conv = parse(request)
-    # conv = route(conv)
-    # format_response(conv)
-    request
-      |> parse
-      |> rewrite_path
-      |> log
-      |> route
-      |> emojify
-      |> track
-      |> format_response
-  end
+defmodule Servy.Plugins do
 
   @doc "Logs 404 requests"
   def track(%{status: 404, path: path} = conv) do
@@ -26,8 +7,6 @@ defmodule Servy.Handler do
   end
   def track(conv), do: conv
 
-  # def rewrite_path(%{path: "/wildlife"} = conv), do: %{conv | path: "/wildthings"}
-  # def rewrite_path(conv), do: conv
   def rewrite_path(%{path: path} = conv) do
     regex = ~r{\/(?<thing>\w+)\?id=(?<id>\d+)}
     captures = Regex.named_captures(regex, path)
@@ -35,18 +14,39 @@ defmodule Servy.Handler do
   end
 
   def rewrite_path_captures(conv, %{"thing" => thing, "id" => id}), do:
-    %{ conv | path: "/#{thing}/#{id}" }
+  %{ conv | path: "/#{thing}/#{id}" }
   def rewrite_path_captures(conv, nil), do: conv
 
   def emojify(%{resp_body: resp_body, path: "/about", status: 200} = conv), do: conv
 
   def emojify(%{resp_body: resp_body, status: 200} = conv), do:
-    %{conv | resp_body: ":) #{resp_body} 🎉" }
+  %{conv | resp_body: ":) #{resp_body} 🎉" }
   def emojify(%{resp_body: resp_body} = conv), do:
   %{conv | resp_body: "Sad... #{resp_body} :(" }
 
 
   def log(conv), do: IO.inspect conv
+
+end
+
+
+defmodule Servy.Handler do
+
+  @moduledoc "Handles HTTP requests"
+
+  @pages_path Path.expand("lib/pages")
+
+  @doc "Transforms the request into response"
+  def handle(request) do
+    request
+      |> parse
+      |> Servy.Plugins.rewrite_path
+      |> Servy.Plugins.log
+      |> route
+      |> Servy.Plugins.emojify
+      |> Servy.Plugins.track
+      |> format_response
+  end
 
   def parse(request) do
     [method, path, _] =
