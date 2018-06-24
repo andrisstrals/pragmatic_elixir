@@ -167,6 +167,17 @@ Content-Length: 21
 name=Ballo&type=Browny
 """
 
+request = """
+POST /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+Content-Type: multipart/form-data
+Content-Length: 21
+
+name=Ballo&type=Browny
+"""
+
 response = Servy.Handler.handle(request)
 IO.puts(response)
 
