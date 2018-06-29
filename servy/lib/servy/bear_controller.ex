@@ -1,20 +1,21 @@
 defmodule Servy.BearController do
   alias Servy.Wildthings
 
-  defp bear_item(b) do
-    "<li>#{b.name} - #{b.hibernating}</li>"
-  end
+  @templates_path Path.expand("lib/templates")
+
 
   def index(conv) do
-    items =
+    bears =
       Wildthings.list_bears()
-      |> Enum.filter(fn b -> b.type == "Grizzly" end)
       |> Enum.sort(fn b1, b2 -> b1.name < b2.name end)
-      |> Enum.map(&bear_item(&1))
-      |> Enum.join()
 
-    # TODO: Transform bears to HTML list
-    %{conv | status: 200, resp_body: "<ul>#{items}</ul>"}
+
+    content =
+      @templates_path
+      |> Path.join("index.eex")
+      |> EEx.eval_file(bears: bears)
+
+    %{conv | status: 200, resp_body: content}
   end
 
   def show(conv, %{"id" => id}) do
