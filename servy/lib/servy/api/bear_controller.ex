@@ -9,4 +9,12 @@ defmodule Servy.Api.BearController do
     conv = Conv.put_resp_content_type(conv, "application/json")
     %{conv | status: 200, resp_body: json}
   end
+
+  def create(conv, %{"name" => name, "type" => type} = params) do
+    %{
+      conv
+      | status: 201,
+        resp_body: "Created a #{type} bear named #{name}!"
+    }
+  end
 end
