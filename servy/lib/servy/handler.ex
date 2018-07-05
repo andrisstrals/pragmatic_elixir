@@ -15,30 +15,30 @@ defmodule Servy.Handler do
     request
     |> parse
     |> rewrite_path
-    # |> log
+      # |> log
     |> route
-    # |> emojify
+      # |> emojify
     |> track
     |> put_content_length
     |> format_response
   end
 
   def route(%Conv{method: "GET", path: "/wildthings"} = conv),
-    do: %{conv | resp_body: "Bears, Lions, Tigers, Snakes", status: 200}
+      do: %{conv | resp_body: "Bears, Lions, Tigers, Snakes", status: 200}
 
   def route(%Conv{method: "GET", path: "/bears"} = conv),
-    do: BearController.index(conv)
+      do: BearController.index(conv)
 
   def route(%Conv{method: "GET", path: "/api/bears"} = conv),
-    do: Servy.Api.BearController.index(conv)
+      do: Servy.Api.BearController.index(conv)
 
   def route(%Conv{method: "GET", path: "/bears/new"} = conv),
-    do:
-      file =
-        @pages_path
-        |> Path.join("form.html")
-        |> File.read()
-        |> handle_file(conv)
+      do:
+        file =
+          @pages_path
+          |> Path.join("form.html")
+          |> File.read()
+          |> handle_file(conv)
 
   def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
     params = Map.put(conv.params, "id", id)
@@ -62,16 +62,35 @@ defmodule Servy.Handler do
       |> handle_file(conv)
   end
 
+  def route(%Conv{method: "GET", path: "/pages/faq"} = conv) do
+    file =
+      @pages_path
+      |> Path.join("faq.md")
+      |> File.read()
+      |> convert_md
+      |> handle_file(conv)
+  end
+
   def route(%Conv{path: path} = conv),
-    do: %{conv | resp_body: "No path #{path} found", status: 404}
+      do: %{conv | resp_body: "No path #{path} found", status: 404}
 
   def handle_file({:ok, content}, conv), do: %Conv{conv | status: 200, resp_body: content}
 
   def handle_file({:error, :enoent}, conv),
-    do: %Conv{conv | status: 404, resp_body: "File not found"}
+      do: %Conv{conv | status: 404, resp_body: "File not found"}
 
   def handle_file({:error, reason}, conv),
-    do: %Conv{conv | status: 500, resp_body: "File error: #{reason}"}
+      do: %Conv{conv | status: 500, resp_body: "File error: #{reason}"}
+
+  def convert_md({:ok, content}) do
+    case Earmark.as_html(content) do
+      {:ok, html, _} -> {:ok, html}
+      {_, _} -> {:error, "MD format unsupported"}
+    end
+
+  end
+
+  def convert_md({res, cont}), do: {res, cont}
 
   def format_response(%Conv{} = conv) do
     """
