@@ -37,7 +37,7 @@ defmodule Servy.HttpServer do
   def accept_loop(listen_socket) do
     IO.puts "... waiting to accept client connection...\n"
     {:ok, client_socket} = :gen_tcp.accept(listen_socket)
-    IO.puts(" connection accpted!\n")
+    IO.puts(" connection accepted!\n")
     serve(client_socket)
 
     accept_loop(listen_socket)
@@ -46,7 +46,7 @@ defmodule Servy.HttpServer do
   def serve(client_socket) do
     client_socket
     |> read_request
-    |> generate_response
+    |> Servy.Handler.handle
     |> write_response(client_socket)
   end
 
@@ -58,15 +58,6 @@ defmodule Servy.HttpServer do
     request
   end
 
-  def generate_response(_request) do
-    """
-    HTTP/1.1 200 OK\r
-    Content-Type: text/plain\r
-    Content_Length: 8\r
-    \r
-    Hello!!!
-    """
-  end
 
   def write_response(response, client_socket) do
     :ok = :gen_tcp.send(client_socket, response)
