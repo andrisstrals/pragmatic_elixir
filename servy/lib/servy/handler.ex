@@ -29,6 +29,9 @@ defmodule Servy.Handler do
   def route(%Conv{method: "GET", path: "/bears"} = conv),
       do: BearController.index(conv)
 
+  def route(%Conv{method: "GET", path: "/kaboom"} = conv),
+      do: raise "kaboom!!!"
+
   def route(%Conv{method: "GET", path: "/api/bears"} = conv),
       do: Servy.Api.BearController.index(conv)
 
