@@ -22,7 +22,7 @@ defmodule Servy.HttpServer do
 
   def start(port) when is_integer(port) and port > 1023 do
     # creates socket to listen for client connections
-    {:ok, listen_socket} = :gen_tcp.listen(port, [:binary, packet: :raw, active: false])
+    {:ok, listen_socket} = :gen_tcp.listen(port, [:binary, packet: :raw, active: false, reuseaddr: true])
 
     # Socket options:
     # :binary - open socket in binary mode and deliver data as binaries
