@@ -2,12 +2,32 @@ defmodule Servy.PledgeServer do
 
   @pid :pledge_server
 
+  #  Client interface functions
   def start do
     IO.puts "Starting the pledge server..."
     pid = spawn(__MODULE__, :listen_loop, [[]])
     Process.register(pid, @pid)
     pid
   end
+
+  def create_pledge(name, amount) do
+    send @pid, {self(), :create_pledge, name, amount}
+    receive do {:response, status} -> status end
+  end
+
+  def recent_pledges() do
+    send @pid, {self(), :recent_pledges}
+    receive do {:response, pledges} -> pledges end
+  end
+
+  def total_pledged() do
+    send @pid, {self(), :total_pledged}
+    receive do {:response, total} -> total end
+  end
+
+
+
+  # Server
 
   def listen_loop(state) do
     IO.puts "\nWaiting for a message..."
@@ -22,36 +42,26 @@ defmodule Servy.PledgeServer do
       {sender, :recent_pledges} ->
         send sender, {:response, state}
         listen_loop(state)
+
+      {sender, :total_pledged} ->
+        total = Enum.map(state, &elem(&1, 1))
+                |> Enum.sum
+        send sender, {:response, total}
+        listen_loop(state)
+
+      unexpected ->
+        IO.puts "Unexpected message #{IO.inspect(unexpected)}"
+        listen_loop(state)
+
     end
   end
 
-
-  def create_pledge(name, amount) do
-    send @pid, {self(), :create_pledge, name, amount}
-    receive do {:response, status} -> status end
-  end
-
-  def recent_pledges() do
-    send @pid, {self(), :recent_pledges}
-    receive do {:response, pledges} -> pledges end
-  end
 
   defp send_pledge_to_service(_name, _amount) do
     #    code goes here to send to external service
     {:ok, "pledge-#{:rand.uniform(1000)}"}
   end
 
-
-#  alias Servy.PledgeServer
-#    pid = PledgeServer.start
-#  #
-  #  Servy.PledgeServer.create_pledge(pid, "lary", 10)
-  #  Servy.PledgeServer.create_pledge(pid, "moe", 20)
-  #  Servy.PledgeServer.create_pledge(pid, "curly", 30)
-  #  Servy.PledgeServer.create_pledge(pid, "daisy", 40)
-  #  Servy.PledgeServer.create_pledge(pid, "grace", 50)
-
-  #  send pid, { self(), :recent_pledges}
-  #  receive do {:response, pledges} -> IO.inspect(pledges) end
-
 end
+
+
