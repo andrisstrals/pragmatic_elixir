@@ -1,10 +1,11 @@
 defmodule Servy.PledgeServer do
 
+  @pid :pledge_server
 
   def start do
     IO.puts "Starting the pledge server..."
     pid = spawn(__MODULE__, :listen_loop, [[]])
-    Process.register(pid, :pledge_server)
+    Process.register(pid, @pid)
     pid
   end
 
@@ -26,12 +27,12 @@ defmodule Servy.PledgeServer do
 
 
   def create_pledge(name, amount) do
-    send :pledge_server, {self(), :create_pledge, name, amount}
+    send @pid, {self(), :create_pledge, name, amount}
     receive do {:response, status} -> status end
   end
 
   def recent_pledges() do
-    send :pledge_server, {self(), :recent_pledges}
+    send @pid, {self(), :recent_pledges}
     receive do {:response, pledges} -> pledges end
   end
 
