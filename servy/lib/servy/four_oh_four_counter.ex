@@ -41,21 +41,12 @@ defmodule Servy.FourOhFourCounter do
 
     receive do
       {sender, :bump_count, path} ->
-        #        count = updateCount(Map.fetch(state, path))
-        count = case Map.fetch(state, path) do
-          {:ok, cnt} -> cnt + 1
-          :error -> 1
-        end
-
-        new_state = Map.put(state, path, count)
-        send sender, {:response, count}
-        listen_loop(new_state)
+        state = Map.update(state, path, 1, &(&1 + 1))
+        send sender, {:response, state}
+        listen_loop(state)
 
       {sender, :get_count, path} ->
-        count = case Map.fetch(Map.take(state, [path]), path) do
-          {:ok, cnt} -> cnt
-          :error -> 0
-        end
+        count = Map.get(state, path, 0)
         send sender, {:response, count}
         listen_loop(state)
 
