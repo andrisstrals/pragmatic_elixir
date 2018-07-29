@@ -7,6 +7,7 @@ defmodule Servy.Handler do
   alias Servy.BearController
   alias Servy.VideoCam
   alias Servy.Tracker
+  alias Servy.FourOhFourCounter
 
   import Servy.Plugins, only: [rewrite_path: 1, log: 1, emojify: 1, track: 1]
   import Servy.Parser, only: [parse: 1]
@@ -25,6 +26,10 @@ defmodule Servy.Handler do
     |> format_response
   end
 
+
+  def route(%Conv{method: "GET", path: "/404s"} = conv) do
+    %{conv | status: 200, resp_body: inspect(FourOhFourCounter.get_counts())}
+  end
 
   def route(%Conv{method: "POST", path: "/pledges"} = conv) do
     Servy.PledgeController.create(conv, conv.params)
