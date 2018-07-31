@@ -11,49 +11,73 @@ defmodule Servy.PledgeServer do
   end
 
   def create_pledge(name, amount) do
-    send @pid, {self(), :create_pledge, name, amount}
-    receive do {:response, status} -> status end
+    call @pid, {:create_pledge, name, amount}
   end
 
   def recent_pledges() do
-    send @pid, {self(), :recent_pledges}
-    receive do {:response, pledges} -> pledges end
+    call @pid, :recent_pledges
   end
 
   def total_pledged() do
-    send @pid, {self(), :total_pledged}
-    receive do {:response, total} -> total end
+    call @pid, :total_pledged
   end
 
+  def clear do
+    cast @pid, :clear
+  end
 
+  #  Helper functions
 
+  def call(pid, message) do
+    send pid, {:call, self(), message}
+    receive do {:response, response} -> response end
+  end
+
+  def cast(pid, message) do
+    send pid, {:cast, message}
+  end
   # Server
 
   def listen_loop(state) do
     IO.puts "\nWaiting for a message..."
 
     receive do
-      {sender, :create_pledge, name, amount} ->
-        {:ok, id} = send_pledge_to_service(name, amount)
-        new_state = [{name, amount} | Enum.take(state, 2)]
-        send sender, {:response, id}
-        listen_loop(new_state)
 
-      {sender, :recent_pledges} ->
-        send sender, {:response, state}
-        listen_loop(state)
+      {:call, sender, message} when is_pid(sender) ->
+        {response, new_state} = handle_call(message, state)
+        send sender, {:response, response}
+        listen_loop new_state
 
-      {sender, :total_pledged} ->
-        total = Enum.map(state, &elem(&1, 1))
-                |> Enum.sum
-        send sender, {:response, total}
-        listen_loop(state)
+      {:cast, message} ->
+        new_state = handle_cast(message, state)
+        listen_loop new_state
 
       unexpected ->
         IO.puts "Unexpected message #{IO.inspect(unexpected)}"
         listen_loop(state)
 
     end
+  end
+
+  defp handle_call(:total_pledged, state) do
+    total = Enum.map(state, &elem(&1, 1))
+            |> Enum.sum
+    {total, state}
+  end
+
+  defp handle_call(:recent_pledges, state) do
+    {state, state}
+  end
+
+  defp handle_call({:create_pledge, name, amount}, state) do
+    {:ok, id} = send_pledge_to_service(name, amount)
+    new_state = [{name, amount} | Enum.take(state, 2)]
+    {id, new_state}
+  end
+
+
+  defp handle_cast(:clear, _state) do
+    []
   end
 
 

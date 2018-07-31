@@ -18,6 +18,10 @@ defmodule PledgyTest do
     assert pledges === [{"grace", 50}, {"daisy", 40}, {"curly", 30}]
     assert total === 120
 
+    PledgeServer.clear
+    assert PledgeServer.recent_pledges() === []
+    assert PledgeServer.total_pledged() === 0
+
   end
 
 end
