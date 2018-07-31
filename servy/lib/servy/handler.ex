@@ -9,7 +9,7 @@ defmodule Servy.Handler do
   alias Servy.Tracker
   alias Servy.FourOhFourCounter
 
-  import Servy.Plugins, only: [rewrite_path: 1, log: 1, emojify: 1, track: 1]
+  import Servy.Plugins, only: [rewrite_path: 1, track: 1]
   import Servy.Parser, only: [parse: 1]
   import Servy.Conv, only: [put_content_length: 1]
 
@@ -58,7 +58,7 @@ defmodule Servy.Handler do
   def route(%Conv{method: "GET", path: "/bears"} = conv),
       do: BearController.index(conv)
 
-  def route(%Conv{method: "GET", path: "/kaboom"} = conv),
+  def route(%Conv{method: "GET", path: "/kaboom"} = _conv),
       do: raise "kaboom!!!"
 
   def route(%Conv{method: "GET", path: "/api/bears"} = conv),
@@ -66,7 +66,7 @@ defmodule Servy.Handler do
 
   def route(%Conv{method: "GET", path: "/bears/new"} = conv),
       do:
-        file =
+        _file =
           @pages_path
           |> Path.join("form.html")
           |> File.read()
@@ -86,8 +86,8 @@ defmodule Servy.Handler do
     Servy.Api.BearController.create(conv, conv.params)
   end
 
-  def route(%Conv{method: "GET", path: "/about" <> id} = conv) do
-    file =
+  def route(%Conv{method: "GET", path: "/about" <> _id} = conv) do
+    _file =
       @pages_path
       |> Path.join("about.html")
       |> File.read()
@@ -95,7 +95,7 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/pages/faq"} = conv) do
-    file =
+    _file =
       @pages_path
       |> Path.join("faq.md")
       |> File.read()
