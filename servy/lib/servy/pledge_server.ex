@@ -2,51 +2,52 @@ defmodule Servy.PledgeServer do
 
   @pid :pledge_server
 
-  alias Servy.GenericServer
+  #  alias Servy.GenericServer
+  use GenServer
 
   #  Client interface functions
   def start do
     IO.puts "Starting the pledge server..."
-    GenericServer.start(__MODULE__, [], @pid)
+    GenServer.start(__MODULE__, [], name: @pid)
   end
 
   def create_pledge(name, amount) do
-    GenericServer.call @pid, {:create_pledge, name, amount}
+    GenServer.call @pid, {:create_pledge, name, amount}
   end
 
   def recent_pledges() do
-    GenericServer.call @pid, :recent_pledges
+    GenServer.call @pid, :recent_pledges
   end
 
   def total_pledged() do
-    GenericServer.call @pid, :total_pledged
+    GenServer.call @pid, :total_pledged
   end
 
   def clear do
-    GenericServer.cast @pid, :clear
+    GenServer.cast @pid, :clear
   end
 
 
   # Server callbacks
-  def handle_call(:total_pledged, state) do
+  def handle_call(:total_pledged, _from, state) do
     total = Enum.map(state, &elem(&1, 1))
             |> Enum.sum
-    {total, state}
+    {:reply, total, state}
   end
 
-  def handle_call(:recent_pledges, state) do
-    {state, state}
+  def handle_call(:recent_pledges, _from, state) do
+    {:reply, state, state}
   end
 
-  def handle_call({:create_pledge, name, amount}, state) do
+  def handle_call({:create_pledge, name, amount}, _from, state) do
     {:ok, id} = send_pledge_to_service(name, amount)
     new_state = [{name, amount} | Enum.take(state, 2)]
-    {id, new_state}
+    {:reply, id, new_state}
   end
 
 
   def handle_cast(:clear, _state) do
-    []
+    {:noreply, []}
   end
 
 

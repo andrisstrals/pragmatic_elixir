@@ -1,7 +1,9 @@
 defmodule Servy.FourOhFourCounter do
   @moduledoc false
 
-  alias Servy.GenericServer
+  #  alias Servy.GenericServer
+
+  use GenServer
 
   @pid :bump_server
 
@@ -9,36 +11,36 @@ defmodule Servy.FourOhFourCounter do
   #  Client interface functions
   def start do
     IO.puts "Starting the bump count server..."
-    GenericServer.start(__MODULE__, %{}, @pid)
+    GenServer.start(__MODULE__, %{}, name: @pid)
   end
 
   def bump_count(path) do
-    GenericServer.call @pid, {:bump_count, path}
+    GenServer.call @pid, {:bump_count, path}
   end
 
 
   def get_count(path) do
-    GenericServer.call @pid, {:get_count, path}
+    GenServer.call @pid, {:get_count, path}
   end
 
 
   def get_counts do
-    GenericServer.call @pid, :get_counts
+    GenServer.call @pid, :get_counts
   end
 
   # Server callbacks
-  def handle_call({:bump_count, path}, state) do
+  def handle_call({:bump_count, path}, _from, state) do
     new_state = Map.update(state, path, 1, &(&1 + 1))
-    {new_state, new_state}
+    {:reply, new_state, new_state}
   end
 
-  def handle_call({:get_count, path}, state) do
+  def handle_call({:get_count, path}, _from, state) do
     count = Map.get(state, path, 0)
-    {count, state}
+    {:reply, count, state}
   end
 
-  def handle_call(:get_counts, state) do
-    {state, state}
+  def handle_call(:get_counts, _from, state) do
+    {:reply, state, state}
   end
 
 end
