@@ -37,6 +37,12 @@ defmodule Servy.PledgeServer do
 
 
   # Server callbacks
+
+  def init(state) do
+    pledges = fetch_recent_pledges_from_service
+    {:ok, %{state | pledges: pledges} }
+  end
+
   def handle_call(:total_pledged, _from, state) do
     total = Enum.map(state.pledges, &elem(&1, 1))
             |> Enum.sum
@@ -64,10 +70,20 @@ defmodule Servy.PledgeServer do
     {:noreply, %{state | cache_size: size}}
   end
 
+#  Called on unprocessed (unexpected) messages
+  def handle_info(message, state) do
+    IO.puts "Can't handle this! #{message}"
+    {:noreply, state}
+  end
+
 
   defp send_pledge_to_service(_name, _amount) do
     #    code goes here to send to external service
     {:ok, "pledge-#{:rand.uniform(1000)}"}
+  end
+
+  defp fetch_recent_pledges_from_service do
+    [{"wilma", 15}, {"fred", 25}]
   end
 
 end
