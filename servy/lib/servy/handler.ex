@@ -5,8 +5,6 @@ defmodule Servy.Handler do
 
   alias Servy.Conv
   alias Servy.BearController
-  alias Servy.VideoCam
-  alias Servy.Tracker
   alias Servy.FourOhFourCounter
 
   import Servy.Plugins, only: [rewrite_path: 1, track: 1]
@@ -40,16 +38,9 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/sensors"} = conv) do
+    sensor_data = Servy.SensorServer.get_sensor_data()
 
-    task = Task.async(fn -> Tracker.get_location("bigfoot") end)
-    shots =
-      ["cam-1", "cam-2", "cam-3"]
-      |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
-      |> Enum.map(&Task.await/1)
-
-    where_is_bigfoot = Task.await(task)
-
-    %{conv | status: 200, resp_body: inspect {shots, where_is_bigfoot}}
+    %{conv | status: 200, resp_body: inspect sensor_data}
   end
 
   def route(%Conv{method: "GET", path: "/wildthings"} = conv),
