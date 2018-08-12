@@ -26,7 +26,7 @@ defmodule Servy.Plugins do
 
   defp rewrite_path_captures(%Conv{} = conv, nil), do: conv
 
-  def emojify(%Conv{resp_body: resp_body, path: "/about", status: 200} = conv), do: conv
+  def emojify(%Conv{resp_body: _resp_body, path: "/about", status: 200} = conv), do: conv
 
   def emojify(%Conv{resp_body: resp_body, status: 200} = conv),
     do: %{conv | resp_body: ":) #{resp_body} 🎉"}

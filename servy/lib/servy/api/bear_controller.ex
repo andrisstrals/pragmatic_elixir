@@ -10,7 +10,7 @@ defmodule Servy.Api.BearController do
     %{conv | status: 200, resp_body: json}
   end
 
-  def create(conv, %{"name" => name, "type" => type} = params) do
+  def create(conv, %{"name" => name, "type" => type} = _params) do
     %{
       conv
       | status: 201,

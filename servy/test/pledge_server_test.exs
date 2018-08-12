@@ -4,7 +4,7 @@ defmodule PledgyTest do
   alias Servy.PledgeServer
 
   test "creates pledges" do
-    PledgeServer.start()
+    PledgeServer.start_link(22)
 
     PledgeServer.create_pledge("larry", 10)
     PledgeServer.create_pledge("moe", 20)
