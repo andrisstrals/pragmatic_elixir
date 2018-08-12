@@ -9,7 +9,7 @@ defmodule Servy.FourOhFourCounter do
 
 
   #  Client interface functions
-  def start do
+  def start_link(_arg) do
     IO.puts "Starting the bump count server..."
     GenServer.start(__MODULE__, %{}, name: @pid)
   end
@@ -29,6 +29,11 @@ defmodule Servy.FourOhFourCounter do
   end
 
   # Server callbacks
+
+  def init(args) do
+    {:ok, args}
+  end
+
   def handle_call({:bump_count, path}, _from, state) do
     new_state = Map.update(state, path, 1, &(&1 + 1))
     {:reply, new_state, new_state}

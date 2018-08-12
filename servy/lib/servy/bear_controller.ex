@@ -2,7 +2,7 @@ defmodule Servy.BearController do
   alias Servy.Wildthings
   alias Servy.BearView
 
-  @templates_path Path.expand("lib/templates")
+#  @templates_path Path.expand("lib/templates")
 
   def index(conv) do
     bears =
@@ -18,7 +18,7 @@ defmodule Servy.BearController do
     %{conv | status: 200, resp_body: BearView.show(bear)}
   end
 
-  def create(conv, %{"name" => name, "type" => type} = params) do
+  def create(conv, %{"name" => name, "type" => type} = _params) do
     %{
       conv
       | status: 201,
