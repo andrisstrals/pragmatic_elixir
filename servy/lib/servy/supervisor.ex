@@ -11,8 +11,7 @@ defmodule Servy.Supervisor do
   def init(:ok) do
     children = [
       Servy.KickStarter,
-      Servy.ServicesSupervisor,
-      Servy.FourOhFourCounter
+      Servy.ServicesSupervisor
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
